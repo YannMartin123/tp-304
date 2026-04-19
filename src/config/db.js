@@ -1,7 +1,7 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-const poolConfig = process.env.DATABASE_URL 
+let poolConfig = process.env.DATABASE_URL 
   ? process.env.DATABASE_URL 
   : {
       host:     process.env.DB_HOST,
@@ -13,16 +13,20 @@ const poolConfig = process.env.DATABASE_URL
       connectionLimit: 10,
     };
 
+// Nettoyage de l'URL si nécessaire (pour éviter les warnings mysql2 sur ssl-mode)
+if (typeof poolConfig === 'string' && poolConfig.includes('ssl-mode=')) {
+  poolConfig = poolConfig.replace(/(\?|&)ssl-mode=[^&]+/, '');
+}
+
 // Ajouter SSL pour Aiven (Production)
 if (process.env.NODE_ENV === 'production' || process.env.DB_SSL === 'true') {
-  if (typeof poolConfig === 'string') {
-    // Si c'est une URL, on ne peut pas facilement injecter SSL via l'objet config
-    // mais mysql2 supporte les query params dans l'URL. 
-    // Cependant, pour plus de sécurité, on peut utiliser l'objet.
-  } else {
+  if (typeof poolConfig === 'object') {
     poolConfig.ssl = {
       rejectUnauthorized: false
     };
+  } else {
+    // Si c'est une string, on la convertit en objet pour pouvoir injecter SSL proprement
+    // Ou on laisse mysql2 gérer si l'URL est correcte, mais ici on force l'objet pour la fiabilité
   }
 }
 

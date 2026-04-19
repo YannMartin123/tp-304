@@ -14,8 +14,12 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
-        description: 'Serveur de développement',
+        url: 'https://tp-304.onrender.com',
+        description: 'Serveur de Production (Render)',
+      },
+      {
+        url: 'http://localhost:10000',
+        description: 'Serveur Local (Dev)',
       },
     ],
     components: {
